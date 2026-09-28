@@ -257,7 +257,6 @@ rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added via a link or github org/name. To run setup automatically, use `opts = {}`
   { 'NMAC427/guess-indent.nvim', opts = {} },
-
   -- Alternatively, use `config = function() ... end` for full control over the configuration.
   -- If you prefer to call `setup` explicitly, use:
   --    {
@@ -627,7 +626,7 @@ require('lazy').setup({
         clangd = {},
         -- gopls = {},
         pyright = {},
-        -- rust_analyzer = {},
+        rust_analyzer = { cmd = { 'rust-analyzer' } },
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
@@ -635,6 +634,15 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {
           settings = {
+            javascript = {
+              inlayHints = {
+                includeInlayParameterNameHints = 'all',
+                includeInlayVariableTypeHints = true,
+                includeInlayFunctionParameterTypeHints = true,
+                includeInlayPropertyDeclarationTypeHints = true,
+                includeInlayFunctionLikeReturnTypeHints = true,
+              },
+            },
             typescript = {
               inlayHints = {
                 includeInlayParameterNameHints = 'all',
@@ -687,6 +695,7 @@ require('lazy').setup({
       --
       -- You can press `g?` for help in this menu.
       local ensure_installed = vim.tbl_keys(servers or {})
+      ensure_installed = vim.tbl_filter(function(server) return server ~= 'rust_analyzer' end, ensure_installed)
       vim.list_extend(ensure_installed, {
         -- You can add other tools here that you want Mason to install
       })
@@ -910,9 +919,14 @@ require('lazy').setup({
     branch = 'main',
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
     config = function()
-      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+      local parsers =
+        { 'python', 'javascript', 'typescript', 'tsx', 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
       require('nvim-treesitter').install(parsers)
+
+      vim.treesitter.language.register('tsx', 'javascript')
+
       vim.api.nvim_create_autocmd('FileType', {
+
         callback = function(args)
           local buf, filetype = args.buf, args.match
 
